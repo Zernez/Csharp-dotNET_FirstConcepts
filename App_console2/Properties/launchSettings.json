@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "App_console2": {
+      "commandName": "Project",
+      "commandLineArgs": "red yellow 10"
+    }
+  }
+}
