@@ -3,6 +3,7 @@ using System;
 using static System.Console;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Diagnostics;
 
 
 // var bob = new Person(); // C# 1.0 or later
@@ -99,47 +100,74 @@ WriteLine($"Before: d = {d}, e = {e}, f doesn't exist yet!"); // simplified C# 7
 bob.PassingParameters(d, ref e, out int f); 
 WriteLine($"After: d = {d}, e = {e}, f = {f}");
 
-public class Person : object{
-    public string Name; 
-    public DateTime DateOfBirth;
-    public WondersOfTheAncientWorld FavoriteAncientWonder;
-    public WondersOfTheAncientWorld BucketList;
-    public List<Person> Children = new();
-    public const string Species = "Homo Sapien";
-    // read-only fields
-    public readonly string HomePlanet = "Earth"; 
-    public readonly DateTime Instantiated; // constructors
-    public Person() { // set default values for fields
-        Name = "Unknown"; Instantiated = DateTime.Now;
-    }
-    public Person(string initialName, string homePlanet) { 
-        Name = initialName; 
-        HomePlanet = homePlanet; 
-        Instantiated = DateTime.Now;
-    }
+Person sam = new() { Name = "Sam", DateOfBirth = new(1972, 1, 27) };
+WriteLine(sam.Origin);
+WriteLine(sam.Greeting);
+WriteLine(sam.Age);
 
-    // methods
-    public (string Name, int Number) GetNamedFruit() { return (Name: "Apples", Number: 5); }
-    public (string, int) GetFruit() { return ("Apples", 5); }
-    public void WriteToConsole() { WriteLine($"{Name} was born on a {DateOfBirth:dddd}."); } 
-    public string GetOrigin() { return $"{Name} was born on {HomePlanet}."; }
+sam.FavoriteIceCream = "Chocolate Fudge"; 
+WriteLine($"Sam's favorite ice-cream flavor is {sam.FavoriteIceCream}."); 
+sam.FavoritePrimaryColor = "Red"; 
+WriteLine($"Sam's favorite primary color is {sam.FavoritePrimaryColor}.");
 
-    // deconstructors
-    public void Deconstruct(out string name, out DateTime dob) { name = Name; dob = DateOfBirth; }
-    public void Deconstruct(out string name, out DateTime dob, out WondersOfTheAncientWorld fav) { name = Name; dob = DateOfBirth; fav = FavoriteAncientWonder; }
+sam.Children.Add(new() { Name = "Charlie" }); 
+sam.Children.Add(new() { Name = "Ella" }); 
+WriteLine($"Sam's first child is {sam.Children[0].Name}");
+WriteLine($"Sam's second child is {sam.Children[1].Name}"); 
+WriteLine($"Sam's first child is {sam[0].Name}"); 
+WriteLine($"Sam's second child is {sam[1].Name}");
 
-    public string SayHello() { return $"{Name} says 'Hello!'"; }
-    public string SayHello(string name) { return $"{Name} says 'Hello {name}!'"; }
+object[] passengers = { 
+    new FirstClassPassenger { AirMiles = 1_419 }, 
+    new FirstClassPassenger { AirMiles = 16_562 }, 
+    new BusinessClassPassenger(), 
+    new CoachClassPassenger { CarryOnKG = 25.7 }, 
+    new CoachClassPassenger { CarryOnKG = 0 }, 
+};
 
-    public string OptionalParameters(string command = "Run!", double number = 0.0, bool active = true) { 
-        return string.Format(format: "command is {0}, number is {1}, active is {2}", arg0: command, arg1: number, arg2: active); 
-    }
+    foreach (object passenger in passengers) {
+    //decimal flightCost = passenger 
+    //switch { 
+    //    FirstClassPassenger p when p.AirMiles > 35000 => 1500M, 
+    //    FirstClassPassenger p when p.AirMiles > 15000 => 1750M, 
+    //    FirstClassPassenger _ => 2000M, 
+    //    BusinessClassPassenger _ => 1000M, 
+    //    CoachClassPassenger p when p.CarryOnKG < 10.0 => 500M, 
+    //    CoachClassPassenger _ => 650M, _ => 800M }; 
 
-    public void PassingParameters(int x, ref int y, out int z)
-    { // out parameters cannot have a default // AND must be initialized inside the method
-      z = 99; 
-      // increment each parameter
-      x++; y++; z++; 
-    }
-}
+    decimal flightCost = passenger switch
+    { /* C# 8 syntax FirstClassPassenger p when p.AirMiles > 35000 => 1500M, FirstClassPassenger p when p.AirMiles > 15000 => 1750M, FirstClassPassenger => 2000M, */ // C# 9 or later syntax
+     FirstClassPassenger p => p.AirMiles switch { > 35000 => 1500M, > 15000 => 1750M, _ => 2000M }, 
+        BusinessClassPassenger => 1000M, 
+        CoachClassPassenger p when p.CarryOnKG < 10.0 => 500M,
+        CoachClassPassenger => 650M,
+        _ => 800M
+    };
+    WriteLine($"Flight costs {flightCost:C} for {passenger}"); 
+};
+
+ImmutablePerson jeff = new() { FirstName = "Jeff", LastName = "Winger" };
+//jeff.FirstName = "Geoff";
+
+ImmutableVehicle car = new() { 
+    Brand = "Mazda MX-5 RF", 
+    Color = "Soul Red Crystal Metallic", 
+    Wheels = 4 }; 
+
+ImmutableVehicle repaintedCar = car with {
+    Color = "Polymetal Grey Metallic" 
+}; 
+
+WriteLine($"Original car color was {car.Color}.");
+WriteLine($"New car color is {repaintedCar.Color}.");
+
+ImmutableAnimal oscar = new("Oscar", "Labrador"); 
+var (who, what) = oscar; // calls Deconstruct method
+WriteLine($"{who} is a {what}.");
+
+
+
+
+
+
 
